@@ -38,10 +38,23 @@ union_type(ctx, parent, union, extensions) ::= <<
 bitset_type(ctx, parent, bitset, extensions) ::= <<
 >>
 
+typedef_decl(ctx, parent, typedefs) ::= <<
+>>
+
 enum_type(ctx, parent, enum) ::= <<
 >>
 
 bitmask_type(ctx, parent, bitmask) ::= <<
+>>
+
+module(ctx, parent, module, definition_list) ::= <<
+namespace $module.name$ {
+    $definition_list$
+} // namespace $module.name$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
 >>
 
 annotation(ctx, annotation) ::= <<

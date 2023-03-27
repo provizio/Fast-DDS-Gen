@@ -142,12 +142,25 @@ bitset_type(ctx, parent, bitset, extensions) ::= <<
 
 >>
 
+typedef_decl(ctx, parent, typedefs) ::= <<
+>>
+
 // Enums are ported as constants in the target language
 enum_type(ctx, parent, enum) ::= <<
 >>
 
 // bitmasks are implemented as enums. Therefore, are ported as constants in the target language
 bitmask_type(ctx, parent, bitmask) ::= <<
+>>
+
+module(ctx, parent, module, definition_list) ::= <<
+namespace $module.name$ {
+    $definition_list$
+} // namespace $module.name$
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
 >>
 
 annotation(ctx, annotation) ::= <<
