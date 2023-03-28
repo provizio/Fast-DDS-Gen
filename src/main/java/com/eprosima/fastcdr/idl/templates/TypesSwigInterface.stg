@@ -64,27 +64,27 @@ fast_macro_declarations() ::= <<
 
 struct_type(ctx, parent, struct, extensions) ::= <<
 ////////////////////////////////////////////////////////
-// Binding for class $struct.name$
+// Binding for class $struct.scope$::$struct.name$
 ////////////////////////////////////////////////////////
 
 // Ignore overloaded methods that have no application on Python
 // Otherwise they will issue a warning
-%ignore $struct.name$::$struct.name$($struct.name$&&);
+%ignore $struct.scope$::$struct.name$::$struct.name$($struct.name$&&);
 
 // Overloaded getter methods shadow each other and are equivalent in python
 // Avoid a warning ignoring all but one
-$struct.members : {$member_getters(struct_name=struct.name, member=it)$}; separator="\n"$
+$struct.members : {$member_getters(struct=struct, member=it)$}; separator="\n"$
 
-%template(_$struct.name$Seq) eprosima::fastdds::dds::LoanableTypedCollection<$struct.name$, std::false_type>;
-%template($struct.name$Seq) eprosima::fastdds::dds::LoanableSequence<$struct.name$, std::false_type>;
-%extend eprosima::fastdds::dds::LoanableSequence<$struct.name$, std::false_type>
+%template(_$struct.name$Seq) eprosima::fastdds::dds::LoanableTypedCollection<$struct.scope$::$struct.name$, std::false_type>;
+%template($struct.name$Seq) eprosima::fastdds::dds::LoanableSequence<$struct.scope$::$struct.name$, std::false_type>;
+%extend eprosima::fastdds::dds::LoanableSequence<$struct.scope$::$struct.name$, std::false_type>
 {
     size_t __len__() const
     {
         return self->length();
     }
 
-    const $struct.name$& __getitem__(size_t i) const
+    const $struct.scope$::$struct.name$& __getitem__(size_t i) const
     {
         return (*self)[i];
     }
@@ -92,24 +92,24 @@ $struct.members : {$member_getters(struct_name=struct.name, member=it)$}; separa
 
 >>
 
-member_getters(struct_name, member) ::= <<
-%ignore $struct_name$::$member.name$($member.typecode.cppTypename$&&);
+member_getters(struct, member) ::= <<
+%ignore $struct.scope$::$struct.name$::$member.name$($member.typecode.cppTypename$&&);
 
 // Overloaded getter methods shadow each other and are equivalent in python
 // Const accesors produced constant enums instead of arrays/dictionaries when used
 // We ignore them to prevent this
 $if(member.typecode.isSequenceType)$
-%ignore $struct_name$::$member.name$() const;
-%template($member.typecode.contentTypeCode.cppTypename$_vector) std::vector<$member.typecode.contentTypeCode.cppTypename$>;
+%ignore $struct.scope$::$struct.name$::$member.name$() const;
+%template($member.typecode.contentTypeCode.cTypename$_vector) std::vector<$member.typecode.contentTypeCode.cppTypename$>;
 $elseif(member.typecode.isMapType)$
-%ignore $struct_name$::$member.name$() const;
-%template($member.typecode.keyTypeCode.cppTypename$_$member.typecode.valueTypeCode.cppTypename$_map) std::map<$member.typecode.keyTypeCode.cppTypename$,$member.typecode.valueTypeCode.cppTypename$>;
+%ignore $struct.scope$::$struct.name$::$member.name$() const;
+%template($member.typecode.keyTypeCode.cTypename$_$member.typecode.valueTypeCode.cTypename$_map) std::map<$member.typecode.keyTypeCode.cppTypename$,$member.typecode.valueTypeCode.cppTypename$>;
 $elseif(member.typecode.isType_f)$
-%ignore $struct_name$::$member.name$() const;
-%template($member.typecode.contentTypeCode.cppTypename$_$member.typecode.dimensions$_array) std::array<$member.typecode.contentTypeCode.cppTypename$,$member.typecode.dimensions$>;
+%ignore $struct.scope$::$struct.name$::$member.name$() const;
+%template($member.typecode.contentTypeCode.cTypename$_$member.typecode.dimensions$_array) std::array<$member.typecode.contentTypeCode.cppTypename$,$member.typecode.dimensions$>;
 $else$
-%ignore $struct_name$::$member.name$();
-%rename("%s") $struct_name$::$member.name$() const;
+%ignore $struct.scope$::$struct.name$::$member.name$();
+%rename("%s") $struct.scope$::$struct.name$::$member.name$() const;
 
 $endif$
 
@@ -154,9 +154,7 @@ bitmask_type(ctx, parent, bitmask) ::= <<
 >>
 
 module(ctx, parent, module, definition_list) ::= <<
-namespace $module.name$ {
-    $definition_list$
-} // namespace $module.name$
+$definition_list$
 >>
 
 definition_list(definitions) ::= <<
